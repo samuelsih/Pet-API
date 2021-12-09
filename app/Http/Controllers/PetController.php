@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PetRequest;
 use App\Http\Resources\PetResource;
 use App\Models\Pet;
 use Illuminate\Http\Request;
@@ -24,17 +25,11 @@ class PetController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(PetRequest $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'gender' => 'required',
-            'weight' => 'required',
-            'description' => 'required',
-            'status' => 'required',
-        ]);
+        $request->validated();
 
-        return Pet::create($request->all());
+        return new PetResource(Pet::create($request->only(['name', 'gender', 'weight', 'description', 'status', 'taxonomy_id'])));
     }
 
     /**
@@ -46,20 +41,7 @@ class PetController extends Controller
     public function show($id)
     {
         $pet = Pet::findOrFail($id)->first();
-        return [
-            'name' => $pet->name,
-            'gender' => $pet->gender,
-            'weight' => $pet->weight,
-            'description' => $pet->description,
-            'status' => $pet->status,
-            'taxonomy' => [
-                'kingdom' => $pet->taxonomy->kingdom,
-                'class' =>  $pet->taxonomy->class,
-                'family' =>  $pet->taxonomy->family,
-                'genus' =>  $pet->taxonomy->genus,
-                'species' =>  $pet->taxonomy->species,
-            ]
-        ];
+        return new PetResource($pet);
     }
 
     /**
@@ -69,34 +51,15 @@ class PetController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(PetRequest $request, $id)
     {
         $pet = Pet::findOrFail($id);
 
-        $request->validate([
-            'name' => 'required',
-            'gender' => 'required',
-            'weight' => 'required',
-            'description' => 'required',
-            'status' => 'required',
-        ]);
+        $request->validated();
 
-        $pet->update($request->all());
+        $pet->update($request->only(['name', 'gender', 'weight', 'description', 'status']));
 
-        return [
-            'name' => $pet->name,
-            'gender' => $pet->gender,
-            'weight' => $pet->weight,
-            'description' => $pet->description,
-            'status' => $pet->status,
-            'taxonomy' => [
-                'kingdom' => $pet->taxonomy->kingdom,
-                'class' =>  $pet->taxonomy->class,
-                'family' =>  $pet->taxonomy->family,
-                'genus' =>  $pet->taxonomy->genus,
-                'species' =>  $pet->taxonomy->species,
-            ]
-        ];
+        return new PetResource($pet);
     }
 
     /**

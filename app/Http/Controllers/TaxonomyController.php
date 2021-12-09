@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\TaxonomyRequest;
 use App\Http\Resources\TaxonomyResource;
 use App\Models\Taxonomy;
-use Illuminate\Http\Request;
+
 
 class TaxonomyController extends Controller
 {
@@ -24,17 +25,11 @@ class TaxonomyController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(TaxonomyRequest $request)
     {
-        $request->validate([
-            'kingdom' => 'required',
-            'class' => 'required',
-            'family' => 'required',
-            'genus' => 'required',
-            'species' => 'required',
-        ]);
+        $request->validated();
 
-        return Taxonomy::create($request->all());
+        return Taxonomy::create($request->only(['kingdom', 'class', 'family', 'genus', 'species']));
     }
 
     /**
@@ -55,17 +50,11 @@ class TaxonomyController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(TaxonomyRequest $request, $id)
     {
         $taxonomy = Taxonomy::findOrFail($id);
 
-        $request->validate([
-            'kingdom' => 'required',
-            'class' => 'required',
-            'family' => 'required',
-            'genus' => 'required',
-            'species' => 'required',
-        ]);
+        $request->validated();;
 
         $taxonomy->update($request->only(['kingdom', 'class', 'family', 'genus', 'species']));
 
