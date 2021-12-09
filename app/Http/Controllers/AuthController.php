@@ -2,26 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function register(Request $request) {
+    public function register(RegisterRequest $request) {
         //validasi
-        $account = $request->validate([
-            'name' => 'required|string',
-            'email' => 'email|string|unique:users,email',
-            'password'=> 'required|string|confirmed',
-        ]);
+        $request->validated();
 
         //buat account dan hash password
-        $user = User::create([
-            'name' => $account['name'],
-            'email' => $account['email'],
-            'password' => bcrypt($account['password']),
-        ]);
+        $request['password'] = bcrypt($request['password']);
+
+
+        $user = User::create($request->only(['name', 'email', 'password']));
 
         //buat token buat user
         $token = $user->createToken('my_token')->plainTextToken;
@@ -42,16 +39,13 @@ class AuthController extends Controller
     }
 
 
-    public function login(Request $request) {
+    public function login(LoginRequest $request) {
         //validasi
-        $account = $request->validate([
-            'email' => 'email|string',
-            'password'=> 'required|string',
-        ]);
+        $request->validated();
 
-        $user = User::where('email', $account['email'])->first();
+        $user = User::where('email', $request['email'])->first();
 
-        if(!$user || !Hash::check($account['password'], $user->password)) {
+        if(!$user || !Hash::check($request['password'], $user->password)) {
             return response([
                 'message' => 'Login failed'
             ], 401);
